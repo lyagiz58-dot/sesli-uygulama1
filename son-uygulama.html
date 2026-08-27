@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Neon İş Takip</title>
+<style>
+:root{--bg:#0b0c10;--glass:rgba(24,28,34,.78);--line:rgba(255,255,255,.13);--green:#00ff66;--cyan:#00f0ff;--gray:#c5c6c7;--yellow:#fff200;--purple:#cc00ff;--orange:#ff7a00;--red:#ff1744}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 0 0,#06351d55,transparent 30%),radial-gradient(circle at 100% 100%,#35004055,transparent 30%),var(--bg);color:var(--gray);font-family:"Segoe UI",sans-serif}
+.container{width:min(1180px,94%);margin:auto;padding:24px 0}
+h1{margin:0;color:var(--green);font-size:clamp(1.8rem,5vw,2.8rem);text-shadow:0 0 14px #00ff6688}
+.subtitle{margin:6px 0 22px;color:#818991}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:16px;box-shadow:0 0 25px #00ff6610;backdrop-filter:blur(14px)}
+.voice-panel{padding:18px;margin-bottom:16px}
+.voice-row{display:flex;gap:10px}
+#voiceText{flex:1;min-width:0;min-height:58px;resize:vertical;border:1px solid #00ff6680;border-radius:10px;padding:16px;color:#fff;background:#05070acc;outline:0;font:inherit;font-size:1rem;box-shadow:0 0 14px #00ff6614}
+#voiceText:focus{box-shadow:0 0 18px #00ff6638}
+button{border:0;border-radius:9px;padding:13px 18px;cursor:pointer;font:inherit;font-weight:700;transition:.2s}
+button:hover{transform:translateY(-2px);filter:brightness(1.12)}
+.voice-btn{min-width:170px;color:#07100b;background:var(--green);font-size:1rem}
+.voice-btn.recording{color:#fff;background:var(--red);box-shadow:0 0 24px #ff174488;animation:recordPulse 1.2s infinite}
+@keyframes recordPulse{50%{box-shadow:0 0 34px #ff1744cc}}
+.voice-hint{margin:10px 2px 0;color:#737b83;font-size:.82rem}
+.recording-status{min-height:18px;margin:8px 2px 0;color:var(--green);font-size:.82rem}
+.recording-playback{display:none;width:100%;margin-top:10px}
+.form-card{padding:18px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.field{grid-column:span 3}.field.wide{grid-column:span 4}.field.full{grid-column:span 12}
+label{display:block;margin-bottom:6px;color:#8a9299;font-size:.75rem;text-transform:uppercase}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;color:var(--gray);background:#05070acc;outline:0;font:inherit}
+textarea{min-height:62px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 10px #00ff6630}
+.form-actions{display:flex;gap:10px;margin-top:14px}
+.save-btn{color:#07100b;background:var(--green)}
+.cancel-btn{display:none;color:var(--gray);background:#252a30}
+.search{display:flex;gap:10px;align-items:center;padding:12px 16px;margin-bottom:16px}
+.search span{color:var(--cyan);font-size:1.4rem}
+.search input{border:0;background:transparent;padding:6px;box-shadow:none}
+.table-card{overflow:hidden}
+.table-wrap{overflow:auto}
+table{width:100%;min-width:760px;border-collapse:collapse}
+th,td{padding:14px 15px;border-bottom:1px solid #ffffff12;text-align:left;vertical-align:middle}
+th{color:var(--green);background:#00ff660b;font-size:.72rem;text-transform:uppercase}
+td{font-size:.9rem}.customer{color:var(--cyan);font-weight:700}.price{color:var(--yellow);font-weight:700}.date{color:var(--purple)}
+.status{display:inline-block;padding:5px 9px;border-radius:20px;font-size:.73rem;font-weight:700}
+.completed{color:var(--green);border:1px solid #00ff6680;background:#00ff6614}
+.pending{color:var(--orange);border:1px solid #ff7a0080;background:#ff7a0014}
+.edit,.delete{padding:7px 9px;margin-right:4px;background:transparent;font-size:.72rem}
+.edit{color:var(--cyan);border:1px solid var(--cyan)}.delete{color:var(--red);border:1px solid var(--red)}
+.empty{padding:32px;text-align:center;color:#6f777e}
+.download{display:flex;justify-content:flex-end;margin-top:16px}.csv{color:#111;background:var(--yellow)}
+@media(max-width:700px){
+ .container{width:92%;padding:20px 0}.voice-row{flex-direction:column}.voice-btn{width:100%;min-height:52px}
+ .field,.field.wide{grid-column:span 12}.form-card{padding:15px}
+ .table-card{background:transparent;border:0;box-shadow:none}
+ table,thead,tbody,tr,td{display:block}table{min-width:0}thead{display:none}
+ tr{margin-bottom:12px;padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--glass)}
+ td{display:grid;grid-template-columns:82px 1fr;gap:10px;padding:7px 3px;border:0}
+ td::before{content:attr(data-label);color:#737b83;font-size:.7rem;text-transform:uppercase}
+ td.actions{display:flex;justify-content:flex-end}.actions::before{display:none}
+}
+</style>
+</head>
+<body>
+<main class="container">
+<h1>NEON İŞ TAKİP</h1>
+<p class="subtitle">Sesle veya yazarak kayıt oluşturun</p>
+
+<section class="glass voice-panel">
+<div class="voice-row">
+<textarea id="voiceText" rows="2" placeholder="Müşteri Ahmet Yılmaz İş kombi bakımı Fiyat bin beş yüz Tarih yirmi yedi ağustos"></textarea>
+<button class="voice-btn" id="voiceBtn" type="button">🎙️ SESLİ SÖYLE</button>
+</div>
+<p class="voice-hint">İlk basışta kayıt başlar, ikinci basışta durur. Metni kutuya yazıp KAYDET butonuna basın.</p>
+<div class="recording-status" id="recordingStatus"></div>
+<audio class="recording-playback" id="recordingPlayback" controls></audio>
+</section>
+
+<section class="glass form-card">
+<form id="jobForm">
+<input type="hidden" id="editId">
+<div class="form-grid">
+<div class="field wide"><label>Müşteri</label><input id="customer" required></div>
+<div class="field wide"><label>Yapılan İş</label><input id="work" required></div>
+<div class="field"><label>Fiyat</label><input id="price" type="number" min="0" step=".01" required></div>
+<div class="field"><label>Tarih</label><input id="date" type="date" required></div>
+<div class="field"><label>Durum</label><select id="status"><option>Bekliyor</option><option>Tamamlandı</option></select></div>
+<div class="field full"><label>Not</label><textarea id="notes"></textarea></div>
+</div>
+<div class="form-actions">
+<button class="save-btn" type="submit" id="saveBtn">KAYDET</button>
+<button class="cancel-btn" type="button" id="cancelBtn">İPTAL</button>
+</div>
+</form>
+</section>
+
+<section class="glass search">
+<span>⌕</span><input id="search" type="search" placeholder="Kayıtlarda ara...">
+</section>
+
+<section class="table-card">
+<div class="table-wrap">
+<table>
+<thead><tr><th>Müşteri</th><th>İş</th><th>Fiyat</th><th>Tarih</th><th>Durum</th><th>Not</th><th>İşlem</th></tr></thead>
+<tbody id="jobList"></tbody>
+</table>
+<div class="empty" id="empty">Henüz kayıt yok.</div>
+</div>
+</section>
+<div class="download"><button class="csv" id="csvBtn">Excel (CSV) İndir</button></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id),key="neonJobs";
+let jobs=JSON.parse(localStorage.getItem(key)||"[]");
+let mediaRecorder=null,recordedChunks=[],recordingStream=null,isRecording=false,recordingUrl="";
+let speechRecognition=null,speechText="",speechShouldRun=false,speechEnded=true,mediaEnded=true;
+
+const months={ocak:0,şubat:1,mart:2,nisan:3,mayıs:4,haziran:5,temmuz:6,ağustos:7,eylül:8,ekim:9,kasım:10,aralık:11};
+const words={sıfır:0,bir:1,iki:2,üç:3,dört:4,beş:5,altı:6,yedi:7,sekiz:8,dokuz:9,on:10,yirmi:20,otuz:30,kırk:40,elli:50,altmış:60,yetmiş:70,seksen:80,doksan:90,yüz:100,bin:1000,milyon:1000000};
+
+function today(){
+ const d=new Date();
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function number(text){
+ const n=text.replace(/\./g,"").replace(",",".").match(/\d+(?:\.\d+)?/);
+ if(n)return Number(n[0]);
+ let total=0,current=0;
+ text.toLocaleLowerCase("tr-TR").replace(/-/g," ").split(/\s+/).forEach(w=>{
+  const v=words[w]; if(v===undefined)return;
+  if(v>=100){current=(current||1)*v;total+=current;current=0}else current+=v;
+ });
+ return total+current||"";
+}
+function parseDate(text){
+ const numeric=text.match(/(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})/);
+ if(numeric){let y=+numeric[3];if(y<100)y+=2000;return `${y}-${String(numeric[2]).padStart(2,"0")}-${String(numeric[1]).padStart(2,"0")}`}
+ const a=text.toLocaleLowerCase("tr-TR").split(/\s+/),m=a.findIndex(x=>months[x]!==undefined);
+ if(m<0)return today();
+ let d=number(a.slice(0,m).join(" "))||1,y=number(a.slice(m+1).join(" "))||new Date().getFullYear();
+ if(y<100)y+=2000;
+ return `${y}-${String(months[a[m]]+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function parseText(){
+ const text=$("voiceText").value.toLocaleLowerCase("tr-TR").replace(/[.,!?]/g," ");
+ const get=(pattern)=>text.match(pattern)?.[1]?.trim()||"";
+ $("customer").value=get(/müşteri\s+(.+?)(?=\s+iş\b|$)/i);
+ $("work").value=get(/\biş\s+(.+?)(?=\s+fiyat\b|\s+tarih\b|$)/i);
+ const p=get(/\bfiyat\s+(.+?)(?=\s+tarih\b|$)/i);$("price").value=number(p);
+ const d=get(/\btarih\s+(.+)$/i);$("date").value=d?parseDate(d):today();
+}
+function startSpeechRecognition(){
+ if(!speechRecognition||!speechShouldRun)return;
+ try{speechRecognition.start()}catch(error){if(error.name!=="InvalidStateError")$("recordingStatus").textContent="Yazıya çevirme başlatılamadı."}
+}
+function finishSpeechRecognition(){
+ if(speechText.trim()){
+  $("voiceText").value=speechText.trim();
+  parseText();
+  $("recordingStatus").textContent="Ses yazıya çevrildi ve alanlara ayrıldı. KAYDET butonuna basın.";
+ }else{
+  $("recordingStatus").textContent="Ses kaydı tamamlandı ancak konuşma metni alınamadı.";
+ }
+}
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+ speechRecognition=new SpeechRecognition();
+ speechRecognition.lang="tr-TR";
+ speechRecognition.continuous=true;
+ speechRecognition.interimResults=true;
+ speechRecognition.onresult=event=>{
+  let finalText="",interimText="";
+  for(let index=event.resultIndex;index<event.results.length;index++){
+   const transcript=event.results[index][0].transcript;
+   if(event.results[index].isFinal)finalText+=transcript+" ";
+   else interimText+=transcript;
+  }
+  speechText+=finalText;
+  $("voiceText").value=(speechText+interimText).trim();
+ };
+ speechRecognition.onend=()=>{
+  speechEnded=true;
+  if(speechShouldRun){speechEnded=false;setTimeout(startSpeechRecognition,150)}
+  else if(mediaEnded)finishSpeechRecognition();
+ };
+ speechRecognition.onerror=event=>{
+  if(event.error!=="aborted"&&event.error!=="no-speech")$("recordingStatus").textContent="Ses yazıya çevrilemiyor; kayıt yine de devam ediyor.";
+ };
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function save(){localStorage.setItem(key,JSON.stringify(jobs))}
+function render(){
+ const q=$("search").value.toLocaleLowerCase("tr-TR");
+ const list=jobs.filter(j=>Object.values(j).join(" ").toLocaleLowerCase("tr-TR").includes(q));
+ $("jobList").innerHTML=list.map(j=>`<tr>
+<td class="customer" data-label="Müşteri">${esc(j.customer)}</td>
+<td data-label="İş">${esc(j.work)}</td>
+<td class="price" data-label="Fiyat">${new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(j.price)}</td>
+<td class="date" data-label="Tarih">${new Intl.DateTimeFormat("tr-TR").format(new Date(j.date+"T00:00:00"))}</td>
+<td data-label="Durum"><span class="status ${j.status==="Tamamlandı"?"completed":"pending"}">${esc(j.status)}</span></td>
+<td data-label="Not">${esc(j.notes||"-")}</td>
+<td class="actions" data-label="İşlem"><button class="edit" onclick="editJob('${j.id}')">Düzenle</button><button class="delete" onclick="deleteJob('${j.id}')">Sil</button></td>
+</tr>`).join("");
+ $("empty").style.display=list.length?"none":"block";
+}
+$("jobForm").addEventListener("submit",e=>{
+ e.preventDefault();parseText();
+ const item={id:$("editId").value||crypto.randomUUID(),customer:$("customer").value.trim(),work:$("work").value.trim(),price:$("price").value,date:$("date").value||today(),status:$("status").value,notes:$("notes").value.trim()};
+ jobs=$("editId").value?jobs.map(j=>j.id===item.id?item:j):[item,...jobs];save();render();resetForm();
+});
+function resetForm(){
+ $("jobForm").reset();$("editId").value="";$("date").value=today();$("status").value="Bekliyor";$("voiceText").value="";$("saveBtn").textContent="KAYDET";$("cancelBtn").style.display="none";
+}
+window.editJob=id=>{
+ const j=jobs.find(x=>x.id===id);if(!j)return;
+ Object.keys(j).forEach(k=>{if($(k))$(k).value=j[k]});
+ $("editId").value=j.id;$("voiceText").value=`Müşteri ${j.customer} İş ${j.work} Fiyat ${j.price} Tarih ${j.date}`;
+ $("saveBtn").textContent="GÜNCELLE";$("cancelBtn").style.display="block";scrollTo({top:0,behavior:"smooth"});
+};
+window.deleteJob=id=>{if(confirm("Bu kayıt silinsin mi?")){jobs=jobs.filter(j=>j.id!==id);save();render()}};
+$("cancelBtn").onclick=resetForm;
+$("search").oninput=render;
+$("voiceText").onclick=()=>$("voiceText").focus();
+$("voiceBtn").onclick=async()=>{
+ if(isRecording){mediaRecorder.stop();return}
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){
+  $("recordingStatus").textContent="Bu tarayıcı ses kaydını desteklemiyor.";
+  return;
+ }
+ try{
+  recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recordedChunks=[];
+    speechText="";
+    speechShouldRun=Boolean(speechRecognition);
+    speechEnded=!speechRecognition;
+    mediaEnded=false;
+    $("voiceText").value="";
+  mediaRecorder=new MediaRecorder(recordingStream);
+  mediaRecorder.ondataavailable=event=>{if(event.data.size)recordedChunks.push(event.data)};
+  mediaRecorder.onstop=()=>{
+   const audioBlob=new Blob(recordedChunks,{type:mediaRecorder.mimeType||"audio/webm"});
+   if(recordingUrl)URL.revokeObjectURL(recordingUrl);
+   recordingUrl=URL.createObjectURL(audioBlob);
+   $("recordingPlayback").src=recordingUrl;
+   $("recordingPlayback").style.display="block";
+   recordingStream.getTracks().forEach(track=>track.stop());
+   recordingStream=null;
+    mediaEnded=true;
+   isRecording=false;
+   $("voiceBtn").classList.remove("recording");
+   $("voiceBtn").textContent="🎙️ SESLİ SÖYLE";
+    speechShouldRun=false;
+    if(speechRecognition&&!speechEnded){
+     try{speechRecognition.stop()}catch(error){}
+    }else finishSpeechRecognition();
+  };
+  mediaRecorder.start();
+  isRecording=true;
+  $("voiceBtn").classList.add("recording");
+  $("voiceBtn").textContent="⏹️ KAYDI DURDUR";
+    $("recordingStatus").textContent=speechRecognition?"Kayıt ve yazıya çevirme devam ediyor... İkinci basışa kadar kapanmaz.":"Kayıt devam ediyor... Susabilirsiniz; ikinci basışa kadar kapanmaz.";
+    startSpeechRecognition();
+ }catch(error){
+  if(recordingStream)recordingStream.getTracks().forEach(track=>track.stop());
+  recordingStream=null;
+  $("recordingStatus").textContent=error.name==="NotAllowedError"?"Mikrofon izni verilmedi.":"Mikrofon başlatılamadı.";
+ }
+};
+
+$("csvBtn").onclick=()=>{
+ const rows=[["Müşteri","Yapılan İş","Fiyat","Tarih","Durum","Not"],...jobs.map(j=>[j.customer,j.work,j.price,j.date,j.status,j.notes])];
+ const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\r\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.download=`neon-is-takip-${today()}.csv`;a.click();URL.revokeObjectURL(a.href);
+};
+$("date").value=today();render();
+</script>
+</body>
+</html>
